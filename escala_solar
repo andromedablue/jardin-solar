@@ -1,0 +1,73 @@
+/* Jardin Solar, Escala solar, Carmen Gonzalez 2009 */
+
+int temPot = 2;
+int speakerPin = 3;
+int val = 0;
+int randomVal;
+
+void setup() {
+  pinMode(speakerPin, OUTPUT);
+  Serial.begin(9600); 
+}
+
+
+// variables para generar notas, beats, tempo y melodia
+int length = 25; // numero de notas a tocar
+char notes[] = "CDEFGABcdefgabCdEfGaBCdEf "; // Un espacio representa una pausa
+int beats = 1;
+int tempo = 300;
+
+
+// configuracion para tocar los tonos en la frecuencia asignada.
+void playTone(int tone, int duration) {
+  Serial.print(val,DEC);
+  Serial.print("  ");
+  for (long i = 0; i < duration * 1000L; i += tone * 2) {
+    digitalWrite(speakerPin, HIGH);
+    delayMicroseconds(tone);
+    digitalWrite(speakerPin, LOW);
+    delayMicroseconds(tone);
+  }
+}
+
+
+// configuracion de notacion segun frecuencia
+void playNote(char note, int duration) {
+  /* Abreviacion del sistema de notacion musical//
+  do = C, re = D, mi = E, fa = F, sol = G, la = A, si = B, */
+ char names[] = { 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'c', 'd', 'e', 'f', 'g', 'a', 'b'};
+ int tones[] = { 4186, 3951, 3729, 3520, 3322, 3135, 2959, 2793, 2637, 2489, 2349, 2217, 2093, 1975 };
+
+// toca el tono segun la nota asignada
+  for (int i = 0; i < 15; i++) {
+    if (names[i] == note) {
+      playTone(tones[i], duration);
+    }
+  }
+}
+
+
+// loop para tocar la melodia en random
+void loop() {
+  for (int i = 0; i < length; i++) {
+   randomSeed(analogRead(3));
+    randomVal = random(16);
+    if (notes[i] == ' ') {
+      delay(beats * tempo); // pausa
+    } else {
+      playNote(notes[i] + randomVal, beats + tempo); // la melodia se toca a partir de las notas x un valor random x beats x tempo//
+    }
+    // pausa entre notas
+    delay(1);
+   readPots();
+    
+    }
+}
+
+
+void readPots () { 
+  tempo = (analogRead (temPot) * 1.2);
+  Serial.print(val,DEC);
+  Serial.print("  ");
+     
+}
