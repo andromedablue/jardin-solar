@@ -1,0 +1,163 @@
+/* ======================================================================
+ Arduino Punk Console
+ A simple programmable 8 step tone sequencer 
+ by dano/beavisaudio.com
+ Revs
+ -----------------------------------
+ 15 Sept  djh  initial version
+======================================================================*/
+
+// Modified by Carmen Gonzalez, Jardin Solar, Solar Sequencer, Tijuana MX 2009
+
+// Mapeo de pins de entrada y salida 
+#define AnalogInFrequency 1
+#define AnalogInTempo 2
+#define AnalogInDuration 0
+#define DigitalOutSignal 11
+#define DigitalInSwitch0 2
+#define DigitalInSwitch1 3
+#define DigitalInSwitch2 4
+#define DigitalInSwitch3 5
+#define DigitalInSwitch4 6
+#define DigitalInSwitch5 7
+#define DigitalInSwitch6 8
+#define DigitalInSwitch7 9 
+#define DigitalInStartStop 10
+
+// Set up the array for each step
+int steps[] = {100,120,140,160,180,200,220,240};
+// misc housekeeping
+int duration = 50;
+int pitchval = 1;
+int fPlayMode = true;
+int lastPushedStep = -1;
+
+// Tempo de inicio
+int tempo = 100;
+
+// lectura de pin 13 para led
+int ledPin = 13;
+int statePin = LOW;
+
+void setup()
+{ 
+  // Los pins digitales se reconocen por default, aqui se designan para mejor lectura del codigo
+  pinMode (DigitalInSwitch0, INPUT);
+  pinMode (DigitalInSwitch1, INPUT);
+  pinMode (DigitalInSwitch2, INPUT);
+  pinMode (DigitalInSwitch3, INPUT);
+  pinMode (DigitalInSwitch4, INPUT);
+  pinMode (DigitalInSwitch5, INPUT);
+  pinMode (DigitalInSwitch6, INPUT);
+  pinMode (DigitalInSwitch7, INPUT);                
+  pinMode (DigitalInStartStop, INPUT);
+  pinMode (DigitalOutSignal, OUTPUT);  
+  
+  Serial.begin(9600);
+}
+
+void loop() 
+{
+  // Principal secuencia de loop 
+  for (int i=0; i<8; i++)
+  {   
+    // Define si esta tocando o en pausa
+    fPlayMode = digitalRead (DigitalInStartStop);
+    // hace lectura de entradas analogas. Verificacion de hardware
+     readSwitches();
+     readPots();
+
+    // Hace ruido
+    if (fPlayMode)
+    {
+      freqout (steps[i], duration);
+    }
+    
+    // pausa entre sonidos
+    delay (tempo);     
+  
+         statePin = !statePin; // hace lecctura del LED como encendido o papgado de a acuerdo a los freceuncia de los pins digitales
+      digitalWrite(ledPin, statePin);  
+  }
+} 
+
+// Lee los valores actuales de los pots y los llama a tocar en loop. 
+void readPots ()
+{
+    tempo = (analogRead (AnalogInTempo) * 1.9);
+    duration = (analogRead (AnalogInDuration));      
+}
+// Lee el valor actual de los switches. Si estan presionados, reemplaza la frecuencia del slot del switch por la lectura de la frecuencia del pot.
+void readSwitches()
+{
+  // resetea el boton por su inmeduato anterior 
+  lastPushedStep = -1;
+
+  // verificacion de switches en estado abierto o cerrado (presionado), si esta presionado, hace la lectura de la frecuencia actual, esta misma accion para cada boton
+  if (digitalRead (DigitalInSwitch0) == HIGH)
+  {
+    steps[0] = analogRead(AnalogInFrequency);
+    lastPushedStep = 1;
+  }
+
+  else if (digitalRead (DigitalInSwitch1) == HIGH)
+  {
+    steps[1] = analogRead(AnalogInFrequency);
+    lastPushedStep = 2;
+  }
+
+  else if (digitalRead (DigitalInSwitch2) == HIGH)
+  {
+    steps[2] = analogRead(AnalogInFrequency);
+    lastPushedStep = 3;
+  }
+  else if (digitalRead (DigitalInSwitch3) == HIGH)
+  {
+    steps[3] = analogRead(AnalogInFrequency);
+    lastPushedStep = 4;
+  }
+  else if (digitalRead (DigitalInSwitch4) == HIGH)
+  {
+    steps[4] = analogRead(AnalogInFrequency);
+    lastPushedStep = 5;
+  }
+  else if (digitalRead (DigitalInSwitch5) == HIGH)
+  {
+    steps[5] = analogRead(AnalogInFrequency);
+    lastPushedStep = 6;
+  }
+  else if (digitalRead (DigitalInSwitch6) == HIGH)
+  {
+    steps[6] = analogRead(AnalogInFrequency);
+    lastPushedStep = 7;
+  }
+  else if (digitalRead (DigitalInSwitch7) == HIGH)
+  { 
+    steps[7] = analogRead(AnalogInFrequency);
+    lastPushedStep = 8;
+  }
+}
+
+
+//freqout code by Paul Badger 
+// freq - valor de fecuencia
+// t - tiempo de duracion del tono
+void freqout(int freq, int t) 
+{ 
+  int hperiod;     //calculate 1/2 period in us 
+  long cycles, i; 
+
+  // subtract 7 us to make up for digitalWrite overhead - determined empirically 
+  hperiod = (500000 / ((freq - 7) * pitchval));             
+
+  // calcula ciclos 
+  cycles = ((long)freq * (long)t) / 1000;    // calcula ciclos
+  for (i=0; i<= cycles; i++)
+  {              // play note for t ms  
+    digitalWrite(DigitalOutSignal, HIGH);  
+    delayMicroseconds(hperiod); 
+    digitalWrite(DigitalOutSignal, LOW);  
+    delayMicroseconds(hperiod - 1);     // - 1 to make up for fractional microsecond in digitaWrite overhead 
+  } 
+}
+ 
