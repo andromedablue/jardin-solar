@@ -1,9 +1,13 @@
-/* Jardin Solar, Escala solar, Carmen Gonzalez 2009 */
+/* Jardin Solar, Carmen Gonzalez 2009 */
 
 int temPot = 2;
 int speakerPin = 3;
 int val = 0;
 int randomVal;
+
+// lectura de pin 13 para led
+int ledPin = 13;
+int statePin = LOW;
 
 void setup() {
   pinMode(speakerPin, OUTPUT);
@@ -60,6 +64,9 @@ void loop() {
     // pausa entre notas
     delay(1);
    readPots();
+   
+            statePin = !statePin; // hace lecctura del LED como encendido o papgado de a acuerdo a los freceuncia de los pins digitales
+      digitalWrite(ledPin, statePin);  
     
     }
 }
