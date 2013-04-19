@@ -1,4 +1,4 @@
-/* Jardin Solar, Carmen Gonzalez 2009 */
+/* Jardin Solar, Escala Solar, Carmen Gonzalez 2009 */
 
 int temPot = 2;
 int speakerPin = 3;
